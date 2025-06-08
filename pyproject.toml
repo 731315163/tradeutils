@@ -1,0 +1,16 @@
+[project]
+name = "tradeutils"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "mathematics",
+    "pandasutils",
+    "pytest>=8.4.0",
+    "statsmodels>=0.14.4",
+]
+
+[tool.uv.sources]
+mathematics = { git = "https://github.com/731315163/mathematics.git" }
+pandasutils = { git = "https://github.com/731315163/pandasutils.git" }
