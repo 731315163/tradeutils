@@ -5,7 +5,10 @@ from statsmodels.tsa.stattools import coint
 import statsmodels.api as sm
 from mathematics.normal import zscore
 def check_cointegration(x, y,trend:Literal['c','ct']='c'):
-    # 检验x与y的协整关系
+    '''
+    检验x与y的协整关系
+    '''
+    
     test_stat, pvalue, crit_values = coint(y, x, trend=trend, autolag='aic')
     print(f"协整检验统计量: {test_stat:.4f}")
     print(f"p值: {pvalue:.4f}")

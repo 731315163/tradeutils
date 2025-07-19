@@ -6,8 +6,7 @@ from typing import Literal, cast
 
 import numpy as np
 import pandas as pd
-from . import IndicatorName,load_df
-from mathematics.arithmetic import clamp
+from tradeutils import IndicatorName,load_df
 from mathematics.stata import (Cache_Profit, PriceVolume, calculate_avgprice,
                                calculate_profit_with_short, slopeR)
 # 现在你可以导入共享文件夹中的模块了
@@ -58,7 +57,8 @@ def search_dfindex(
     column = timeutil.to_utctz(column)
     idx = cast(int, column.searchsorted(value=time, side="left"))
     if isclamp:
-        idx = clamp(x=idx, min_v=0, max_v=len(df) - 1)
+        
+        idx = np.clip(a=idx, a_min=0, a_max=len(df) - 1)
     return cast(int, idx)
 
 

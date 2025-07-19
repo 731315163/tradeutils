@@ -9,7 +9,7 @@ import pandas as pd
 import pytest
 
 from pandasutils import dfutil
-from tradeutils.gridutil import (
+from tradeutils.strategies.gridutil import (
     _combined_df,
     adjust_datetime,
     filename,

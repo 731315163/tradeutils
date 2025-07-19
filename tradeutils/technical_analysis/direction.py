@@ -6,7 +6,7 @@ from typing import Literal, cast
 
 import numpy as np
 import pandas as pd
-from ..tradeutils import IndicatorName,load_df
+from tradeutils import IndicatorName,load_df
 from mathematics.arithmetic import clamp
 from mathematics.stata import (Cache_Profit, PriceVolume, calculate_avgprice,linregress,
                                calculate_profit_with_short, slopeR,MinMax,corrcoef)
@@ -14,7 +14,7 @@ from tradeutils.volumeprofile import get_analyze_volumeprofiles
 from pandasutils import (DatetimeType, SequenceGenericType, SequenceType,
                    TimedeltaType, TimeFormat, TimeFrameStr, dfutil, pathutil,
                    timeutil)
-from numpy.lib.stride_tricks import sliding_window_view as sliding
+
 def get_SlopeR( datapoint: SequenceType, err: SequenceType|None=None, windows: int = 7):
     slope = np.zeros(len(datapoint))
     x = np.arange(1, windows + 1)
@@ -24,15 +24,6 @@ def get_SlopeR( datapoint: SequenceType, err: SequenceType|None=None, windows: i
         idx = i + 1
         y_normal,_,_ = MinMax(datapoint[idx - windows : idx])
         slope[i] = slopeR(x=x_norm, y=y_normal)
-    return slope
-def get_corrcoef( datapoint: SequenceType, windows: int = 7):
-    slope = np.zeros(len(datapoint))
-    x = np.arange(1, windows + 1)
-    
-    x_norm = (x - 1) / windows
-    for i in range(windows - 1, len(datapoint)):
-        idx = i + 1
-        slope[i] = corrcoef(x=x_norm, y=datapoint[idx-windows:idx])
     return slope
 def Linregress(y:SequenceType,windows=7):
     slopeR = np.zeros(len(y))
@@ -200,11 +191,5 @@ def get_direction(
 
 
 
-def VWAP(prices: pd.Series,volume:pd.Series,windows:int):
-    amount = prices * volume
-    vwap = (
-    amount.rolling(window=windows, min_periods=1).sum() /
-    volume.rolling(window=windows, min_periods=1).sum()
-    )
-    return vwap
+
     

@@ -9,8 +9,13 @@ dependencies = [
     "pandasutils",
     "pytest>=8.4.0",
     "statsmodels>=0.14.4",
+    "ta-lib>=0.6.4",
 ]
-
+[project.optional-dependencies]
+dev = [
+  "pytest",           # 开发依赖
+  "pytest-cov",       # 测试覆盖率工具
+]
 [tool.uv.sources]
 mathematics = { git = "https://github.com/731315163/mathematics.git" }
 pandasutils = { git = "https://github.com/731315163/pandasutils.git" }
