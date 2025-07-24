@@ -29,6 +29,4 @@ __all__ = [
     "roc_periods",
     "sma_periods",
     "linear_regression_periods",
-
-
 ]

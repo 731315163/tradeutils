@@ -1,18 +1,11 @@
 
 
-
-from collections.abc import Sequence,MutableSequence
+from tradeutils.type import SequenceType
 import numpy as np
 
 
-
-
-
-
-
-
 class Position:
-    def __init__(self,  index: int, position_sizing: float,positions: Sequence | MutableSequence | np.ndarray):
+    def __init__(self,  index: int, position_sizing: float,positions: SequenceType):
         """
         side: long or short
         position_sizing: 仓位大小

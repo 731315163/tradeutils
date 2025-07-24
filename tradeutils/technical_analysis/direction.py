@@ -1,16 +1,13 @@
-import math
-from collections.abc import Sequence
-from datetime import datetime, timedelta, timezone
+from datetime import timezone
 from pathlib import Path
-from typing import Literal, cast
+from typing import cast
 
 import numpy as np
 import pandas as pd
 from tradeutils import IndicatorName,load_df
 from mathematics import SequenceType
-from mathematics.stata import (Cache_Profit, PriceVolume, calculate_avgprice,linregress,
-                               calculate_profit_with_short, slopeR,MinMax,corrcoef)
-from tradeutils.volumeprofile import get_analyze_volumeprofiles
+from mathematics.stata import (linregress,
+                               slopeR,min_max)
 from pandasutils import ( dfutil, pathutil,timeutil)
 
 def get_SlopeR( datapoint: SequenceType, err: SequenceType|None=None, windows: int = 7):
@@ -20,7 +17,7 @@ def get_SlopeR( datapoint: SequenceType, err: SequenceType|None=None, windows: i
     x_norm = (x - 1) / windows
     for i in range(windows - 1, len(datapoint)):
         idx = i + 1
-        y_normal,_,_ = MinMax(datapoint[idx - windows : idx])
+        y_normal,_,_ = min_max(datapoint[idx - windows : idx])
         slope[i] = slopeR(x=x_norm, y=y_normal)
     return slope
 def Linregress(y:SequenceType,windows=7):
@@ -29,7 +26,7 @@ def Linregress(y:SequenceType,windows=7):
     intercept = np.zeros(len(y))
     r = np.zeros(len(y))
     x = np.arange(1, windows + 1)
-    x_minmax = MinMax(x)
+    x_min_max = min_max(x)
     for i in range(windows - 1, len(y)):
         idx = i + 1
         slope_original, intercept_original,r_value,r_slope = linregress(x=x_minmax, y=y[idx - windows : idx])

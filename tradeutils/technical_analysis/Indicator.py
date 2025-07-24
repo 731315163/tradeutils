@@ -143,6 +143,9 @@ def caculate_williams_signals(close, high, low, periods=[14, 20]):
 def calculate_emotion_index(close: SequenceType, high: SequenceType, low: SequenceType):
     """
     计算情绪指数：平均两类振荡器的结果，范围[-1,1]
+    calculate_adjusted_rsi_oscillators(close)
+    calculate_adjusted_candle_range_oscillators(close, high, low)
+    caculate_stochastic_signals(close, high, low)
     对应论文公式：EmotionIndex = (1/12) * Σ(oscillator_i){insert\_element\_2\_}
     """
     # 获取两类振荡器的结果
@@ -156,7 +159,7 @@ def calculate_emotion_index(close: SequenceType, high: SequenceType, low: Sequen
     return np.clip(np.mean(all_oscillators), -1.0, 1.0)
 
 
-def calculate_anchored_trend_score(close: np.ndarray, emotion_index: float, emotion_threshold: float = 0.1, current_anchored_trend: float = 0.0):
+def calculate_anchored_trend_score(close: SequenceType, emotion_index: float, emotion_threshold: float = 0.1, pre_anchored_trend: float = 0.0):
     """
     计算锚定趋势分数，基于当前趋势分数和情绪指数更新锚定趋势值
     当情绪指数接近0（绝对值≤情绪阈值）时，使用当前趋势分数更新锚定趋势分数，否则保持原有锚定趋势分数
@@ -165,7 +168,58 @@ def calculate_anchored_trend_score(close: np.ndarray, emotion_index: float, emot
     if abs(emotion_index) <= emotion_threshold:
         return current_trend
     else:
-        return current_anchored_trend
+        return pre_anchored_trend
+def forward_fill(arr, fill_first=False):
+    """
+    用前一个非 NaN 值填充连续的 NaN（优化版）。
+    
+    参数:
+        arr (np.ndarray): 输入的 NumPy 数组。
+        fill_first (bool): 是否填充最前面的 NaN，默认为 False。
+        
+    返回:
+        np.ndarray: 填充后的数组。
+    """
+    arr = np.asarray(arr)
+    mask = np.isfinite(arr)
+    
+    if not mask.any():
+        return arr.copy()
+    
+    idx = np.where(mask, np.arange(len(arr)), -1)
+    np.maximum.accumulate(idx, out=idx)
+    
+    if fill_first:
+        first_valid_idx = mask.argmax()
+        idx[:first_valid_idx] = first_valid_idx
+    else:
+        first_valid_idx = mask.argmax()
+        idx[:first_valid_idx] = -1
+        
+    return arr[idx]
+
+def calculate_anchored_trend(close: SequenceType, emotion_index: SequenceType, emotion_threshold: float = 0.1):
+    """
+    计算锚定趋势分数（优化版）。
+    """
+    close = np.array(close)
+    emotion_index = np.array(emotion_index)
+  
+    
+    if close.shape != emotion_index.shape:
+        raise ValueError("close和emotion_index必须具有相同的形状")
+    emotion_threshold = abs(emotion_threshold)
+  
+    
+    trends = calculate_trend_score(close)
+    mask = np.abs(emotion_index) <= emotion_threshold
+    ary = np.where(mask, trends, np.nan)
+    
+    # 使用优化后的forward_fill
+    filled_ary = forward_fill(ary, fill_first=True)
+    
+    return filled_ary
+    
 
 def calculate_timing_indicator(anchored_trend: SequenceType| float, emotion_index: SequenceType| float):
     """计算时机指标：锚定趋势分数 - 情绪指数

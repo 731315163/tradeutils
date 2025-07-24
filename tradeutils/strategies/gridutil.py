@@ -1,52 +1,49 @@
 import math
-from collections.abc import Sequence
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Literal, cast
 
 import numpy as np
 import pandas as pd
-from tradeutils import load_df
 # 现在你可以导入共享文件夹中的模块了
 from tradeutils.volumeprofile import get_analyze_volumeprofiles
-from pandasutils import (DatetimeType, 
-                   dfutil, timeutil)
-from mathematics import SequenceType
+from pandasutils import  dfutil, timeutil
+from tradeutils.type import DatetimeType,SequenceType
 
 
 
-def search_dfindex(
-    time: DatetimeType, df: pd.DataFrame, indexname="date", isclamp: bool = False
-):
-    """
-    在 DataFrame 中搜索特定时间的索引位置。
+# def search_dfindex(
+#     time: DatetimeType, df: pd.DataFrame, indexname="date", isclamp: bool = False
+# ):
+#     """
+#     在 DataFrame 中搜索特定时间的索引位置。
 
-    本函数旨在查找给定时间在 DataFrame 中的插入位置，可以选择性地对结果索引进行边界检查以防止越界。
-    查找插入位置
-    new <= old
-    参数:
-    - time: datetime 类型，指定要搜索的时间。
-    - df: pd.DataFrame 类型，包含时间相关索引或列的数据表。
-    - indexname: 字符串类型，指定 DataFrame 中的时间相关索引或列名，默认为 "date"。
-    - isclamp: 布尔类型，指示是否对结果索引进行边界检查，默认为 False。
+#     本函数旨在查找给定时间在 DataFrame 中的插入位置，可以选择性地对结果索引进行边界检查以防止越界。
+#     查找插入位置
+#     new <= old
+#     参数:
+#     - time: datetime 类型，指定要搜索的时间。
+#     - df: pd.DataFrame 类型，包含时间相关索引或列的数据表。
+#     - indexname: 字符串类型，指定 DataFrame 中的时间相关索引或列名，默认为 "date"。
+#     - isclamp: 布尔类型，指示是否对结果索引进行边界检查，默认为 False。
 
-    返回:
-    - int 类型，时间在 DataFrame 中的插入位置索引。
-    """
-    time = timeutil.to_utctz(time=time)
+#     返回:
+#     - int 类型，时间在 DataFrame 中的插入位置索引。
+#     """
+#     time = timeutil.to_utctz(time=time)
 
-    if indexname == df.index.name:
-        column = df.index
-    elif indexname in df.columns:
-        column = df[indexname]
-    else:
-        raise ValueError("Invalid indexname: indexname must be in df.columns or index.")
-    column = timeutil.to_utctz(column)
-    idx = cast(int, column.searchsorted(value=time, side="left"))
-    if isclamp:
+#     if indexname == df.index.name:
+#         column = df.index
+#     elif indexname in df.columns:
+#         column = df[indexname]
+#     else:
+#         raise ValueError("Invalid indexname: indexname must be in df.columns or index.")
+#     column = timeutil.to_utctz(column)
+#     idx = cast(int, column.searchsorted(value=time, side="left"))
+#     if isclamp:
         
-        idx = np.clip(a=idx, a_min=0, a_max=len(df) - 1)
-    return cast(int, idx)
+#         idx = np.clip(a=idx, a_min=0, a_max=len(df) - 1)
+#     return cast(int, idx)
 
 
 
@@ -168,7 +165,7 @@ def get_grid_index(
 
 
 def get_position(
-    stack_grid: Sequence | np.ndarray,
+    stack_grid: SequenceType,
     cur_p: int | float,
     cur_amount: int | float,
     low_p: int | float,

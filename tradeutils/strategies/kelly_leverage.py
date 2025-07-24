@@ -1,9 +1,6 @@
 
 import numpy as np
+from tradeutils.type import SequenceType
 
-
-
-from collections.abc import Sequence,MutableSequence
-
-def kelly_leverage(array: Sequence|MutableSequence|np.ndarray,r=0.03):
+def kelly_leverage(array: SequenceType,r=0.03):
     return (np.mean(array)-r) /np.var(array)

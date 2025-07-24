@@ -1,6 +1,4 @@
 import math
-import os
-import time
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -10,19 +8,13 @@ import pytest
 
 from pandasutils import dfutil
 from tradeutils.strategies.gridutil import (
-    _combined_df,
-    adjust_datetime,
-    filename,
-    get_direction,
     get_grid_index,
     get_pricesgrid,
     get_position,
     getgrid,
-    load_df,
-    merge_predict_df,
+ 
     pricesgridnum,
-    resample,
-    search_dfindex,
+ 
 )
 
 
@@ -510,139 +502,139 @@ def test_get_pricesgrid_large_interval():
     assert np.allclose(result, expected, atol=1e-6)
 
 
-@pytest.mark.parametrize(
-    "time,data,result",
-    [
-        (
-            "2023-01-02",
-            ["2023-01-01", "2023-01-02", "2023-01-03"],
-            1,
-        ),
-        (
-            "2023-01-02",
-            ["2023-01-01", "2023-01-02", "2023-01-03"],
-            1,
-        ),
-        (
-            "2023-01-02",
-            ["2023-01-01", "2023-01-03"],
-            1,
-        ),
-        ("2023-01-01", ["2023-01-02", "2023-01-03"], 0),
-        ("2023-01-03", ["2023-01-01", "2023-01-02"], 2),
-        ("2023-01-01", [], 0),
-        ("2023-01-01", ["2023-01-01"], 0),
-    ],
-)
-def test_clampfalse_search_dfindex(time, data, result):
-    df = pd.DataFrame({"date": pd.to_datetime(data)})
-    assert search_dfindex(time=time, df=df, isclamp=False) == result
+# @pytest.mark.parametrize(
+#     "time,data,result",
+#     [
+#         (
+#             "2023-01-02",
+#             ["2023-01-01", "2023-01-02", "2023-01-03"],
+#             1,
+#         ),
+#         (
+#             "2023-01-02",
+#             ["2023-01-01", "2023-01-02", "2023-01-03"],
+#             1,
+#         ),
+#         (
+#             "2023-01-02",
+#             ["2023-01-01", "2023-01-03"],
+#             1,
+#         ),
+#         ("2023-01-01", ["2023-01-02", "2023-01-03"], 0),
+#         ("2023-01-03", ["2023-01-01", "2023-01-02"], 2),
+#         ("2023-01-01", [], 0),
+#         ("2023-01-01", ["2023-01-01"], 0),
+#     ],
+# )
+# def test_clampfalse_search_dfindex(time, data, result):
+#     df = pd.DataFrame({"date": pd.to_datetime(data)})
+#     assert search_dfindex(time=time, df=df, isclamp=False) == result
 
 
-@pytest.mark.parametrize(
-    "time,data,result",
-    [
-        (
-            "2023-01-02",
-            ["2023-01-01", "2023-01-02", "2023-01-03"],
-            1,
-        ),
-        (
-            "2023-01-02",
-            ["2023-01-01", "2023-01-02", "2023-01-03"],
-            1,
-        ),
-        (
-            "2023-01-02",
-            ["2023-01-01", "2023-01-03"],
-            1,
-        ),
-        ("2023-01-01", ["2023-01-02", "2023-01-03"], 0),
-        ("2023-01-03", ["2023-01-01", "2023-01-02"], 1),
-        ("2023-01-01", [], 0),
-        ("2023-01-01", ["2023-01-01"], 0),
-    ],
-)
-def test_clamptrue_search_dfindex(time, data, result):
-    df = pd.DataFrame({"date": pd.to_datetime(data)})
-    assert search_dfindex(time=time, df=df, isclamp=True) == result
+# @pytest.mark.parametrize(
+#     "time,data,result",
+#     [
+#         (
+#             "2023-01-02",
+#             ["2023-01-01", "2023-01-02", "2023-01-03"],
+#             1,
+#         ),
+#         (
+#             "2023-01-02",
+#             ["2023-01-01", "2023-01-02", "2023-01-03"],
+#             1,
+#         ),
+#         (
+#             "2023-01-02",
+#             ["2023-01-01", "2023-01-03"],
+#             1,
+#         ),
+#         ("2023-01-01", ["2023-01-02", "2023-01-03"], 0),
+#         ("2023-01-03", ["2023-01-01", "2023-01-02"], 1),
+#         ("2023-01-01", [], 0),
+#         ("2023-01-01", ["2023-01-01"], 0),
+#     ],
+# )
+# def test_clamptrue_search_dfindex(time, data, result):
+#     df = pd.DataFrame({"date": pd.to_datetime(data)})
+#     assert search_dfindex(time=time, df=df, isclamp=True) == result
 
 
-def test_search_dfindex_with_custom_index_name():
-    df = pd.DataFrame(
-        {"timestamp": pd.to_datetime(["2023-01-01", "2023-01-02", "2023-01-03"])}
-    )
-    time = "2023-01-02"
-    assert search_dfindex(time=pd.to_datetime(time), df=df, indexname="timestamp") == 1
+# def test_search_dfindex_with_custom_index_name():
+#     df = pd.DataFrame(
+#         {"timestamp": pd.to_datetime(["2023-01-01", "2023-01-02", "2023-01-03"])}
+#     )
+#     time = "2023-01-02"
+#     assert search_dfindex(time=pd.to_datetime(time), df=df, indexname="timestamp") == 1
 
 
-def test_adjust_datetime_midnight_should_add_one_minute():
-    dt = datetime(2023, 10, 1, 0, 0, 0)
-    expected = datetime(2023, 10, 1, 0, 1, 0, tzinfo=timezone.utc)
-    result = adjust_datetime(dt)
-    assert result == expected, f"Expected {expected}, but got {result}"
+# def test_adjust_datetime_midnight_should_add_one_minute():
+#     dt = datetime(2023, 10, 1, 0, 0, 0)
+#     expected = datetime(2023, 10, 1, 0, 1, 0, tzinfo=timezone.utc)
+#     result = adjust_datetime(dt)
+#     assert result == expected, f"Expected {expected}, but got {result}"
 
 
-def test_adjust_datetime_not_midnight_should_return_same():
-    dt = datetime(2023, 10, 1, tzinfo=timezone.utc)
-    expected = datetime(2023, 10, 1, 0, 1, 0, tzinfo=timezone.utc)
-    result = adjust_datetime(dt)
-    assert result == expected, f"Expected {expected}, but got {result}"
+# def test_adjust_datetime_not_midnight_should_return_same():
+#     dt = datetime(2023, 10, 1, tzinfo=timezone.utc)
+#     expected = datetime(2023, 10, 1, 0, 1, 0, tzinfo=timezone.utc)
+#     result = adjust_datetime(dt)
+#     assert result == expected, f"Expected {expected}, but got {result}"
 
 
-def test_adjust_datetime_midnight_dif_timezone():
-    dt = datetime(2023, 10, 1, tzinfo=timezone(timedelta(hours=0)))
-    expected = datetime(2023, 10, 1, 0, 1, 0, tzinfo=timezone.utc)
-    result = adjust_datetime(dt)
-    assert result == expected, f"Expected {expected}, but got {result}"
+# def test_adjust_datetime_midnight_dif_timezone():
+#     dt = datetime(2023, 10, 1, tzinfo=timezone(timedelta(hours=0)))
+#     expected = datetime(2023, 10, 1, 0, 1, 0, tzinfo=timezone.utc)
+#     result = adjust_datetime(dt)
+#     assert result == expected, f"Expected {expected}, but got {result}"
 
 
-def test_adjust_datetime_midnight_diff_timezone():
-    dt = datetime(2023, 10, 1, tzinfo=timezone(timedelta(hours=1)))
-    expected = datetime(2023, 10, 1, 0, 1, 0, tzinfo=timezone.utc)
-    result = adjust_datetime(dt)
-    assert result != expected, f"Expected {expected}, but got {result}"
+# def test_adjust_datetime_midnight_diff_timezone():
+#     dt = datetime(2023, 10, 1, tzinfo=timezone(timedelta(hours=1)))
+#     expected = datetime(2023, 10, 1, 0, 1, 0, tzinfo=timezone.utc)
+#     result = adjust_datetime(dt)
+#     assert result != expected, f"Expected {expected}, but got {result}"
 
 
-def test_adjust_datetime_slightly_after_midnight_should_return_same():
-    dt = datetime(2023, 10, 1, 0, 0, 1, tzinfo=timezone.utc)
-    expected = datetime(2023, 10, 1, 0, 0, 1, tzinfo=timezone.utc)
-    result = adjust_datetime(dt)
-    assert result == expected, f"Expected {expected}, but got {result}"
+# def test_adjust_datetime_slightly_after_midnight_should_return_same():
+#     dt = datetime(2023, 10, 1, 0, 0, 1, tzinfo=timezone.utc)
+#     expected = datetime(2023, 10, 1, 0, 0, 1, tzinfo=timezone.utc)
+#     result = adjust_datetime(dt)
+#     assert result == expected, f"Expected {expected}, but got {result}"
 
 
-@pytest.fixture
-def resample_dataframe():
-    # 准备数据
-    data = {
-        "date": pd.date_range(start="2023-01-01", periods=10, freq="5min"),
-        "open": np.arange(10),
-        "high": np.arange(10) + 2,
-        "low": np.arange(10) - 2,
-        "close": np.arange(10) + 1,
-        "volume": np.arange(10) * 10,
-    }
-    return pd.DataFrame(data)
+# @pytest.fixture
+# def resample_dataframe():
+#     # 准备数据
+#     data = {
+#         "date": pd.date_range(start="2023-01-01", periods=10, freq="5min"),
+#         "open": np.arange(10),
+#         "high": np.arange(10) + 2,
+#         "low": np.arange(10) - 2,
+#         "close": np.arange(10) + 1,
+#         "volume": np.arange(10) * 10,
+#     }
+#     return pd.DataFrame(data)
 
 
-def test_resample_DefaultTimeframe_10Min(resample_dataframe):
-    print(resample_dataframe)
-    # 重新采样
-    resampled_df = resample(resample_dataframe)
-    print(resampled_df)
-    # 验证结果
-    expected_data = {
-        "date": pd.date_range(start="2023-01-01", periods=5, freq="10min"),
-        "open": np.array([0, 2, 4, 6, 8]),
-        "high": np.array([3, 5, 7, 9, 11]),
-        "low": np.array([-2, 0, 2, 4, 6]),
-        "close": np.array([2, 4, 6, 8, 10]),
-        "volume": np.array([10, 50, 90, 130, 170]),
-    }
+# def test_resample_DefaultTimeframe_10Min(resample_dataframe):
+#     print(resample_dataframe)
+#     # 重新采样
+#     resampled_df = resample(resample_dataframe)
+#     print(resampled_df)
+#     # 验证结果
+#     expected_data = {
+#         "date": pd.date_range(start="2023-01-01", periods=5, freq="10min"),
+#         "open": np.array([0, 2, 4, 6, 8]),
+#         "high": np.array([3, 5, 7, 9, 11]),
+#         "low": np.array([-2, 0, 2, 4, 6]),
+#         "close": np.array([2, 4, 6, 8, 10]),
+#         "volume": np.array([10, 50, 90, 130, 170]),
+#     }
 
-    expected_df = pd.DataFrame(expected_data).set_index("date")
-    expected_df = expected_df.asfreq("10min")
-    pd.testing.assert_frame_equal(resampled_df, expected_df)
+#     expected_df = pd.DataFrame(expected_data).set_index("date")
+#     expected_df = expected_df.asfreq("10min")
+#     pd.testing.assert_frame_equal(resampled_df, expected_df)
 
 
 @pytest.fixture
@@ -665,26 +657,7 @@ def predict_data():
     return predict_data
 
 
-def test_combined(comb_data, predict_data):
-    """
-    在合并过程中，sample_data的1月10日 value 覆盖了predict_data的1月10日value
-    """
-    result = _combined_df(
-        time=datetime(2023, 1, 11),
-        informative=comb_data,
-        predict_df=predict_data,
-    )
-    expcted = pd.DataFrame(
-        data={
-            "date": pd.date_range(start="2023-01-1", periods=14, freq="D"),
-            "value": list(range(10)) + list(range(11, 15)),
-        }
-    )
-    dfutil.setindex(df=expcted, key="date")
-    pd.testing.assert_frame_equal(
-        result,
-        expcted,
-    )
+
 
 
 @pytest.fixture
@@ -705,122 +678,61 @@ def setup_data():
     return informative, predict_df
 
 
-def test_merge_predict_df_predict_df_none_or_empty_returns_informative(setup_data):
-    informative, _ = setup_data
-    t = datetime(2023, 1, 1, 14, 0)
-    # Test with predict_df=None
-    result_none = merge_predict_df("pair", t, informative, None)
-    pd.testing.assert_frame_equal(result_none, informative)
+# def test_merge_predict_df_predict_df_none_or_empty_returns_informative(setup_data):
+#     informative, _ = setup_data
+#     t = datetime(2023, 1, 1, 14, 0)
+#     # Test with predict_df=None
+#     result_none = merge_predict_df("pair", t, informative, None)
+#     pd.testing.assert_frame_equal(result_none, informative)
 
-    # Test with predict_df empty
-    result_empty = merge_predict_df("pair", t, informative, pd.DataFrame())
-    pd.testing.assert_frame_equal(result_empty, informative)
-
-
-def test_merge_predict_df_informative_empty_returns_empty(setup_data):
-    # informative is None or empty
-    _, predict_df = setup_data
-    t = datetime(2023, 1, 1, 14, 0)
-    with pytest.raises(ValueError):
-        result = merge_predict_df("pair", t, pd.DataFrame(), predict_df)
+#     # Test with predict_df empty
+#     result_empty = merge_predict_df("pair", t, informative, pd.DataFrame())
+#     pd.testing.assert_frame_equal(result_empty, informative)
 
 
-def test_merge_predict_df_overlap(setup_data):
-    informative, predict_df = setup_data
-
-    t = datetime(2023, 1, 1, 15, 10)
-    # 可以通过time来延展数组，返回的df未必与informative的长度相同
-    result = merge_predict_df(
-        "pair", time=t, informative=informative, predict_df=predict_df
-    )
-    print(result)
-    df = pd.DataFrame(
-        {
-            "date": pd.date_range(start="2023-01-01 10:00", periods=5, freq="h"),
-            "value": ["3", "4", "5", "b", "c"],
-        }
-    )
-    dfutil.setindex(df, "date")
-    pd.testing.assert_frame_equal(result, df)
+# def test_merge_predict_df_informative_empty_returns_empty(setup_data):
+#     # informative is None or empty
+#     _, predict_df = setup_data
+#     t = datetime(2023, 1, 1, 14, 0)
+#     with pytest.raises(ValueError):
+#         result = merge_predict_df("pair", t, pd.DataFrame(), predict_df)
 
 
-def test_merge_predict_df_big(setup_data):
-    informative, predict_df = setup_data
-    t = datetime(2023, 1, 1, 15, 0)
-    result = merge_predict_df("pair", t, informative, predict_df)
-    print(result)
-    expected = pd.DataFrame(
-        {
-            "date": pd.date_range(start="2023-01-01 10:00", periods=5, freq="h"),
-            "value": ["3", "4", "5", "b", "c"],
-        }
-    )
-    dfutil.setindex(expected, "date")
-    pd.testing.assert_frame_equal(result, expected)
+# def test_merge_predict_df_overlap(setup_data):
+#     informative, predict_df = setup_data
+
+#     t = datetime(2023, 1, 1, 15, 10)
+#     # 可以通过time来延展数组，返回的df未必与informative的长度相同
+#     result = merge_predict_df(
+#         "pair", time=t, informative=informative, predict_df=predict_df
+#     )
+#     print(result)
+#     df = pd.DataFrame(
+#         {
+#             "date": pd.date_range(start="2023-01-01 10:00", periods=5, freq="h"),
+#             "value": ["3", "4", "5", "b", "c"],
+#         }
+#     )
+#     dfutil.setindex(df, "date")
+#     pd.testing.assert_frame_equal(result, df)
 
 
-def test_merge_predict_df_smallf(setup_data):
-    informative, predict_df = setup_data
-    t = datetime(
-        2023,
-        1,
-        1,
-        13,
-    )
-    """
-    直截取到了13之前，不包括13点
-    """
-    result = merge_predict_df("pair", t, informative, predict_df)
-
-    expected = pd.DataFrame(
-        {
-            "date": pd.to_datetime(
-                [
-                    "2023-01-01 10:00",
-                    "2023-01-01 11:00",
-                    "2023-01-01 12:00",
-                    "2023-01-01 14:00",
-                    "2023-01-01 15:00",
-                ]
-            ),
-            "value": ["2", "3", "a", "b", "c"],
-        }
-    )
-
-    dfutil.setindex(df=expected, key="date")
-    pd.testing.assert_frame_equal(result, expected)
+# def test_merge_predict_df_big(setup_data):
+#     informative, predict_df = setup_data
+#     t = datetime(2023, 1, 1, 15, 0)
+#     result = merge_predict_df("pair", t, informative, predict_df)
+#     print(result)
+#     expected = pd.DataFrame(
+#         {
+#             "date": pd.date_range(start="2023-01-01 10:00", periods=5, freq="h"),
+#             "value": ["3", "4", "5", "b", "c"],
+#         }
+#     )
+#     dfutil.setindex(expected, "date")
+#     pd.testing.assert_frame_equal(result, expected)
 
 
-def test_merge_predict_df_smalledge(setup_data):
-    informative, predict_df = setup_data
-    t = datetime(2023, 1, 1, 7, 0)
-    result = merge_predict_df("pair", t, informative, predict_df)
-    print(result)
 
-    expected = pd.DataFrame(
-        data={"date": pd.to_datetime([]), "value": []},
-    )
-    dfutil.setindex(expected, "date")
-    expected["value"] = expected["value"].astype("object")
-    pd.testing.assert_frame_equal(
-        result,
-        expected,
-    )
-
-
-def test_merge_predict_df_big_edge(setup_data):
-    informative, predict_df = setup_data
-    t = datetime(2023, 1, 1, 23, 0)
-    result = merge_predict_df("pair", t, informative, predict_df)
-    print(result)
-    expected = pd.DataFrame(
-        {
-            "date": pd.date_range(start="2023-01-01 10:00", periods=5, freq="h"),
-            "value": ["3", "4", "5", "b", "c"],
-        }
-    )
-    dfutil.setindex(expected, "date")
-    pd.testing.assert_frame_equal(result, expected)
 
 
 # -------------------------------
@@ -842,299 +754,284 @@ def create_sample_df(n: int) -> pd.DataFrame:
 # -------------------------------
 # 测试用例1：测试返回值的长度
 # -------------------------------
-def test_get_indicators_length(tmp_path):
-    n = 20
-    df = create_sample_df(n)
-    # 调用函数，window默认7
-    Direction, lowerband, upperband = get_direction(
-        loadf_dir_path=tmp_path,
-        pair="pair",
-        df=df,
-        timeindex="date",
-        omega_n="atr",
-        window=7,
-    )
-    # 返回的三个数组长度应与df行数一致
-    assert len(Direction) == n
-    assert len(lowerband) == n
-    assert len(upperband) == n
+
 
 
 # -------------------------------
 # 测试用例2：测试Direction数组中的取值是否仅包含 0, 1, -1
 # -------------------------------
-def test_get_indicators_direction_values(tmp_path):
-    df = create_sample_df(15)
-    # 这里采用较小的window方便观测
-    Direction, _, _ = get_direction(
-        tmp_path, "dummy_pair", df, timeindex="date", omega_n="atr", window=3
-    )
-    unique_values = np.unique(Direction)
-    for val in unique_values:
-        assert val in (0, 1, -1)
+# def test_get_indicators_direction_values(tmp_path):
+#     df = create_sample_df(15)
+#     # 这里采用较小的window方便观测
+#     Direction, _, _ = get_direction(
+#         tmp_path, "dummy_pair", df, timeindex="date", omega_n="atr", window=3
+#     )
+#     unique_values = np.unique(Direction)
+#     for val in unique_values:
+#         assert val in (0, 1, -1)
 
 
-# -------------------------------
-# 测试用例3：测试lowerband和upperband的计算结果
-# -------------------------------
-def test_lowerband_upperband_values(tmp_path):
-    n = 10
-    window = 4
-    df = create_sample_df(n)
-    _, lowerband, upperband = get_direction(
-        tmp_path, "dummy_pair", df, timeindex="date", omega_n="atr", window=window
-    )
-    # 根据代码逻辑，对于i从(window-1)开始，
-    # lowerband[i] 应该是取merged_df中最近window个元素的最低值，
-    # 由于dummy_merge_predict_df直接返回informative，即原始df，因此我们直接取df["low"]
-    for i in range(window - 1, n):
-        expected_lower = df["low"].iloc[i - window + 1 : i + 1].min()
-        expected_upper = df["high"].iloc[i - window + 1 : i + 1].max()
-        np.testing.assert_allclose(lowerband[i], expected_lower)
-        np.testing.assert_allclose(upperband[i], expected_upper)
-    # 对于i < window-1, 由于循环未赋值，默认值应为0
-    for i in range(window - 1):
-        assert lowerband[i] == 0
-        assert upperband[i] == 0
+# # -------------------------------
+# # 测试用例3：测试lowerband和upperband的计算结果
+# # -------------------------------
+# def test_lowerband_upperband_values(tmp_path):
+#     n = 10
+#     window = 4
+#     df = create_sample_df(n)
+#     _, lowerband, upperband = get_direction(
+#         tmp_path, "dummy_pair", df, timeindex="date", omega_n="atr", window=window
+#     )
+#     # 根据代码逻辑，对于i从(window-1)开始，
+#     # lowerband[i] 应该是取merged_df中最近window个元素的最低值，
+#     # 由于dummy_merge_predict_df直接返回informative，即原始df，因此我们直接取df["low"]
+#     for i in range(window - 1, n):
+#         expected_lower = df["low"].iloc[i - window + 1 : i + 1].min()
+#         expected_upper = df["high"].iloc[i - window + 1 : i + 1].max()
+#         np.testing.assert_allclose(lowerband[i], expected_lower)
+#         np.testing.assert_allclose(upperband[i], expected_upper)
+#     # 对于i < window-1, 由于循环未赋值，默认值应为0
+#     for i in range(window - 1):
+#         assert lowerband[i] == 0
+#         assert upperband[i] == 0
 
 
-# 测试数据
-@pytest.fixture
-def sample_data():
-    data = {
-        "date": pd.date_range(start="1/1/2023", periods=10),
-        "high": [100, 102, 101, 103, 104, 105, 106, 107, 108, 109],
-        "low": [98, 99, 97, 96, 95, 94, 93, 92, 91, 90],
-        "atr": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-    }
-    return pd.DataFrame(data)
+# # 测试数据
+# @pytest.fixture
+# def sample_data():
+#     data = {
+#         "date": pd.date_range(start="1/1/2023", periods=10),
+#         "high": [100, 102, 101, 103, 104, 105, 106, 107, 108, 109],
+#         "low": [98, 99, 97, 96, 95, 94, 93, 92, 91, 90],
+#         "atr": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+#     }
+#     return pd.DataFrame(data)
 
 
-def test_get_indicators_window_1(sample_data):
+# def test_get_indicators_window_1(sample_data):
 
-    direction, lowerband, upperband = get_direction(
-        loadf_dir_path=Path("dummy_path"),
-        pair="dummy_pair",
-        df=sample_data,
-        timeindex="date",
-        omega_n="atr",
-        window=1,
-    )
+#     direction, lowerband, upperband = get_direction(
+#         loadf_dir_path=Path("dummy_path"),
+#         pair="dummy_pair",
+#         df=sample_data,
+#         timeindex="date",
+#         omega_n="atr",
+#         window=1,
+#     )
 
-    expected_direction = np.array([1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
-    expected_lowerband = np.array([98, 99, 97, 96, 95, 94, 93, 92, 91, 90])
-    expected_upperband = np.array([100, 102, 101, 103, 104, 105, 106, 107, 108, 109])
-    print(direction)
-    assert np.array_equal(direction, expected_direction)
-    assert np.array_equal(lowerband, expected_lowerband)
-    assert np.array_equal(upperband, expected_upperband)
-
-
-def test_get_indicators_window_3(tmp_path, sample_data):
-
-    direction, lowerband, upperband = get_direction(
-        loadf_dir_path=tmp_path,
-        pair="dummy_pair",
-        df=sample_data,
-        timeindex="date",
-        omega_n="atr",
-        window=3,
-    )
-    print(direction)
-    expected_direction = np.array([0, 0, 1, 1, 1, 1, 1, 1, 1, 1])
-    expected_lowerband = np.array([0, 0, 97, 96, 95, 94, 93, 92, 91, 90])
-    expected_upperband = np.array([0, 0, 102, 103, 104, 105, 106, 107, 108, 109])
-
-    assert np.array_equal(direction, expected_direction)
-    assert np.array_equal(lowerband, expected_lowerband)
-    assert np.array_equal(upperband, expected_upperband)
+#     expected_direction = np.array([1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
+#     expected_lowerband = np.array([98, 99, 97, 96, 95, 94, 93, 92, 91, 90])
+#     expected_upperband = np.array([100, 102, 101, 103, 104, 105, 106, 107, 108, 109])
+#     print(direction)
+#     assert np.array_equal(direction, expected_direction)
+#     assert np.array_equal(lowerband, expected_lowerband)
+#     assert np.array_equal(upperband, expected_upperband)
 
 
-def test_get_indicators_empty_df():
-    empty_df = pd.DataFrame(columns=["date", "high", "low", "atr"])
+# def test_get_indicators_window_3(tmp_path, sample_data):
 
-    direction, lowerband, upperband = get_direction(
-        loadf_dir_path=Path("dummy_path"),
-        pair="dummy_pair",
-        df=empty_df,
-        timeindex="date",
-        omega_n="atr",
-        window=3,
-    )
-    N = len(empty_df)
-    expected = np.zeros(N)
+#     direction, lowerband, upperband = get_direction(
+#         loadf_dir_path=tmp_path,
+#         pair="dummy_pair",
+#         df=sample_data,
+#         timeindex="date",
+#         omega_n="atr",
+#         window=3,
+#     )
+#     print(direction)
+#     expected_direction = np.array([0, 0, 1, 1, 1, 1, 1, 1, 1, 1])
+#     expected_lowerband = np.array([0, 0, 97, 96, 95, 94, 93, 92, 91, 90])
+#     expected_upperband = np.array([0, 0, 102, 103, 104, 105, 106, 107, 108, 109])
 
-    assert np.array_equal(direction, expected)
-    assert np.array_equal(lowerband, expected)
-    assert np.array_equal(upperband, expected)
-
-
-# 测试数据框不足窗口大小的情况
+#     assert np.array_equal(direction, expected_direction)
+#     assert np.array_equal(lowerband, expected_lowerband)
+#     assert np.array_equal(upperband, expected_upperband)
 
 
-def test_get_indicators_insufficient_data(sample_data):
-    insufficient_df = sample_data.iloc[:2]
+# def test_get_indicators_empty_df():
+#     empty_df = pd.DataFrame(columns=["date", "high", "low", "atr"])
 
-    direction, lowerband, upperband = get_direction(
-        loadf_dir_path=Path("dummy_path"),
-        pair="pair",
-        df=insufficient_df,
-        timeindex="date",
-        omega_n="atr",
-        window=3,
-    )
-    N = len(insufficient_df)
-    expected = np.zeros(N)
+#     direction, lowerband, upperband = get_direction(
+#         loadf_dir_path=Path("dummy_path"),
+#         pair="dummy_pair",
+#         df=empty_df,
+#         timeindex="date",
+#         omega_n="atr",
+#         window=3,
+#     )
+#     N = len(empty_df)
+#     expected = np.zeros(N)
 
-    assert np.array_equal(direction, expected)
-    assert np.array_equal(lowerband, expected)
-    assert np.array_equal(upperband, expected)
-
-
-@pytest.fixture
-def tmp_dirdata(tmp_path):
-    # 创建临时目录，并写入测试数据
-    df = pd.DataFrame(
-        {
-            "date": pd.date_range(start="2023-01-09", periods=4, freq="D"),
-            "high": [150, 155, 100, 165],
-            "low": [120, 125, 170, 135],
-            "close": [135, 140, 145, 150],
-            "atr": [5, 5.2, 5.1, 5],
-        }
-    )
-    pair = "EURUSD"
-    pre_time = datetime(2023, 1, 9)
-    time_frame = timedelta(days=1)
-    p = tmp_path / filename(pair, pre_time=pre_time, time_frame=time_frame)
-    df.to_csv(p, index=False)
-    return p
+#     assert np.array_equal(direction, expected)
+#     assert np.array_equal(lowerband, expected)
+#     assert np.array_equal(upperband, expected)
 
 
-def test_load_existing_file(tmp_path, tmp_dirdata):
-    path = tmp_dirdata
-    print(path)
-    pair = "EURUSD"
-    pre_time = datetime(2023, 1, 9)
-    time_frame = timedelta(days=1)
-    # 测试文件存在时，load 函数应该返回文件内容
-    df, _ = load_df(tmp_path, pair, pre_time=pre_time, time_frame=time_frame)
-    assert len(df) == 4  # 验证加载的行数是否为10
+# # 测试数据框不足窗口大小的情况
 
 
-def test_load_non_existing_file(tmp_path):
-    pair = "EURUSD"
-    pre_time = datetime(2023, 1, 1)
-    time_frame = timedelta(days=1)
+# def test_get_indicators_insufficient_data(sample_data):
+#     insufficient_df = sample_data.iloc[:2]
 
-    # 测试文件不存在时，load 函数应该返回空 DataFrame
-    df, _ = load_df(tmp_path, pair, pre_time=pre_time, time_frame=time_frame)
-    assert df.empty  # 文件不存在时，返回的 DataFrame 应为空
+#     direction, lowerband, upperband = get_direction(
+#         loadf_dir_path=Path("dummy_path"),
+#         pair="pair",
+#         df=insufficient_df,
+#         timeindex="date",
+#         omega_n="atr",
+#         window=3,
+#     )
+#     N = len(insufficient_df)
+#     expected = np.zeros(N)
 
-
-def test_get_indicators_no_exception(tmp_path, sample_data, tmp_dirdata):
-    pair = "EURUSD"
-    dirdata = tmp_dirdata
-    # 调用 get_indicators 并验证没有异常
-
-    direction, lowerband, upperband = get_direction(
-        loadf_dir_path=tmp_path,
-        pair=pair,
-        df=sample_data,
-        timeindex="date",
-        omega_n="atr",
-        window=5,
-    )
-    assert direction[9] == -1
-
-    assert upperband[8] == 165
+#     assert np.array_equal(direction, expected)
+#     assert np.array_equal(lowerband, expected)
+#     assert np.array_equal(upperband, expected)
 
 
-def test_get_indicators_invalid_window(tmp_path, sample_data):
-    pair = "EURUSD"
-    # 设置一个无效的窗口值（大于数据长度）
-    window = 20
-    direction, lowerband, upperband = get_direction(
-        loadf_dir_path=tmp_path,
-        pair=pair,
-        df=sample_data,
-        timeindex="date",
-        omega_n="atr",
-        window=window,
-    )
-
-    # 确保返回的 direction, lowerband, upperband 为空数组
-    assert np.all(direction == 0)
-    assert np.all(lowerband == 0)
-    assert np.all(upperband == 0)
-
-
-def test_get_indicators_invalid_atr_column(tmp_path):
-    # 测试没有提供正确的 ATR 列时的行为
-    pair = "EURUSD"
-    df = pd.DataFrame(
-        {
-            "date": pd.date_range(start="2023-01-01", periods=10, freq="D"),
-            "high": [150, 155, 160, 165, 170, 175, 180, 185, 190, 195],
-            "low": [120, 125, 130, 135, 140, 145, 150, 155, 160, 165],
-            "close": [135, 140, 145, 150, 155, 160, 165, 170, 175, 180],
-        }
-    )
-
-    # ATR 列缺失
-    with pytest.raises(KeyError):
-        get_direction(
-            loadf_dir_path=tmp_path,
-            pair=pair,
-            df=df,
-            timeindex="date",
-            omega_n="atr",  # 'atr' column is missing
-            window=5,
-        )
+# @pytest.fixture
+# def tmp_dirdata(tmp_path):
+#     # 创建临时目录，并写入测试数据
+#     df = pd.DataFrame(
+#         {
+#             "date": pd.date_range(start="2023-01-09", periods=4, freq="D"),
+#             "high": [150, 155, 100, 165],
+#             "low": [120, 125, 170, 135],
+#             "close": [135, 140, 145, 150],
+#             "atr": [5, 5.2, 5.1, 5],
+#         }
+#     )
+#     pair = "EURUSD"
+#     pre_time = datetime(2023, 1, 9)
+#     time_frame = timedelta(days=1)
+#     p = tmp_path / filename(pair, pre_time=pre_time, time_frame=time_frame)
+#     df.to_csv(p, index=False)
+#     return p
 
 
-def test_get_indicators_invalid_timeindex_column(tmp_path):
-    # 测试没有提供正确的 timeindex 列时的行为
-    tmp_dir = tmp_path
-    pair = "EURUSD"
-    df = pd.DataFrame(
-        {
-            "date": pd.date_range(start="2023-01-01", periods=10, freq="D"),
-            "high": [150, 155, 160, 165, 170, 175, 180, 185, 190, 195],
-            "low": [120, 125, 130, 135, 140, 145, 150, 155, 160, 165],
-            "close": [135, 140, 145, 150, 155, 160, 165, 170, 175, 180],
-            "atr": [5, 5.2, 5.1, 5, 4.8, 5.1, 5, 5.2, 5, 4.9],
-        }
-    )
-
-    # timeindex 列缺失
-    with pytest.raises(KeyError):
-        get_direction(
-            loadf_dir_path=tmp_dir,
-            pair=pair,
-            df=df,
-            timeindex="nonexistent_column",  # Column that does not exist
-            omega_n="atr",
-            window=5,
-        )
+# def test_load_existing_file(tmp_path, tmp_dirdata):
+#     path = tmp_dirdata
+#     print(path)
+#     pair = "EURUSD"
+#     pre_time = datetime(2023, 1, 9)
+#     time_frame = timedelta(days=1)
+#     # 测试文件存在时，load 函数应该返回文件内容
+#     df, _ = load_df(tmp_path, pair, pre_time=pre_time, time_frame=time_frame)
+#     assert len(df) == 4  # 验证加载的行数是否为10
 
 
-def testget_direction_empty_window(tmp_path, sample_data):
-    # 测试窗口为0的情况
-    pair = "EURUSD"
+# def test_load_non_existing_file(tmp_path):
+#     pair = "EURUSD"
+#     pre_time = datetime(2023, 1, 1)
+#     time_frame = timedelta(days=1)
 
-    # 设置一个窗口值为0
-    window = 0
-    direction, lowerband, upperband = get_direction(
-        loadf_dir_path=tmp_path,
-        pair=pair,
-        df=sample_data,
-        timeindex="date",
-        omega_n="atr",
-        window=window,
-    )
+#     # 测试文件不存在时，load 函数应该返回空 DataFrame
+#     df, _ = load_df(tmp_path, pair, pre_time=pre_time, time_frame=time_frame)
+#     assert df.empty  # 文件不存在时，返回的 DataFrame 应为空
 
-    # 确保返回的 direction, lowerband, upperband 为空数组
-    assert np.all(direction == 0)
-    assert np.all(lowerband == 0)
-    assert np.all(upperband == 0)
+
+# def test_get_indicators_no_exception(tmp_path, sample_data, tmp_dirdata):
+#     pair = "EURUSD"
+#     dirdata = tmp_dirdata
+#     # 调用 get_indicators 并验证没有异常
+
+#     direction, lowerband, upperband = get_direction(
+#         loadf_dir_path=tmp_path,
+#         pair=pair,
+#         df=sample_data,
+#         timeindex="date",
+#         omega_n="atr",
+#         window=5,
+#     )
+#     assert direction[9] == -1
+
+#     assert upperband[8] == 165
+
+
+# def test_get_indicators_invalid_window(tmp_path, sample_data):
+#     pair = "EURUSD"
+#     # 设置一个无效的窗口值（大于数据长度）
+#     window = 20
+#     direction, lowerband, upperband = get_direction(
+#         loadf_dir_path=tmp_path,
+#         pair=pair,
+#         df=sample_data,
+#         timeindex="date",
+#         omega_n="atr",
+#         window=window,
+#     )
+
+#     # 确保返回的 direction, lowerband, upperband 为空数组
+#     assert np.all(direction == 0)
+#     assert np.all(lowerband == 0)
+#     assert np.all(upperband == 0)
+
+
+# def test_get_indicators_invalid_atr_column(tmp_path):
+#     # 测试没有提供正确的 ATR 列时的行为
+#     pair = "EURUSD"
+#     df = pd.DataFrame(
+#         {
+#             "date": pd.date_range(start="2023-01-01", periods=10, freq="D"),
+#             "high": [150, 155, 160, 165, 170, 175, 180, 185, 190, 195],
+#             "low": [120, 125, 130, 135, 140, 145, 150, 155, 160, 165],
+#             "close": [135, 140, 145, 150, 155, 160, 165, 170, 175, 180],
+#         }
+#     )
+
+#     # ATR 列缺失
+#     with pytest.raises(KeyError):
+#         get_direction(
+#             loadf_dir_path=tmp_path,
+#             pair=pair,
+#             df=df,
+#             timeindex="date",
+#             omega_n="atr",  # 'atr' column is missing
+#             window=5,
+#         )
+
+
+# def test_get_indicators_invalid_timeindex_column(tmp_path):
+#     # 测试没有提供正确的 timeindex 列时的行为
+#     tmp_dir = tmp_path
+#     pair = "EURUSD"
+#     df = pd.DataFrame(
+#         {
+#             "date": pd.date_range(start="2023-01-01", periods=10, freq="D"),
+#             "high": [150, 155, 160, 165, 170, 175, 180, 185, 190, 195],
+#             "low": [120, 125, 130, 135, 140, 145, 150, 155, 160, 165],
+#             "close": [135, 140, 145, 150, 155, 160, 165, 170, 175, 180],
+#             "atr": [5, 5.2, 5.1, 5, 4.8, 5.1, 5, 5.2, 5, 4.9],
+#         }
+#     )
+
+#     # timeindex 列缺失
+#     with pytest.raises(KeyError):
+#         get_direction(
+#             loadf_dir_path=tmp_dir,
+#             pair=pair,
+#             df=df,
+#             timeindex="nonexistent_column",  # Column that does not exist
+#             omega_n="atr",
+#             window=5,
+#         )
+
+
+# def testget_direction_empty_window(tmp_path, sample_data):
+#     # 测试窗口为0的情况
+#     pair = "EURUSD"
+
+#     # 设置一个窗口值为0
+#     window = 0
+#     direction, lowerband, upperband = get_direction(
+#         loadf_dir_path=tmp_path,
+#         pair=pair,
+#         df=sample_data,
+#         timeindex="date",
+#         omega_n="atr",
+#         window=window,
+#     )
+
+#     # 确保返回的 direction, lowerband, upperband 为空数组
+#     assert np.all(direction == 0)
+#     assert np.all(lowerband == 0)
+#     assert np.all(upperband == 0)
