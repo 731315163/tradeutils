@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 
 # 现在你可以导入共享文件夹中的模块了
-from pandasutils import SequenceType
+from mathematics import SequenceType
 
 
 class SparseArray:

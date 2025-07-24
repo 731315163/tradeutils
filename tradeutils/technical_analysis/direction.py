@@ -7,13 +7,11 @@ from typing import Literal, cast
 import numpy as np
 import pandas as pd
 from tradeutils import IndicatorName,load_df
-from mathematics.arithmetic import clamp
+from mathematics import SequenceType
 from mathematics.stata import (Cache_Profit, PriceVolume, calculate_avgprice,linregress,
                                calculate_profit_with_short, slopeR,MinMax,corrcoef)
 from tradeutils.volumeprofile import get_analyze_volumeprofiles
-from pandasutils import (DatetimeType, SequenceGenericType, SequenceType,
-                   TimedeltaType, TimeFormat, TimeFrameStr, dfutil, pathutil,
-                   timeutil)
+from pandasutils import ( dfutil, pathutil,timeutil)
 
 def get_SlopeR( datapoint: SequenceType, err: SequenceType|None=None, windows: int = 7):
     slope = np.zeros(len(datapoint))

@@ -16,7 +16,7 @@ from tradeutils.strategies.gridutil import (
     get_direction,
     get_grid_index,
     get_pricesgrid,
-    get_stakeamount,
+    get_position,
     getgrid,
     load_df,
     merge_predict_df,
@@ -350,7 +350,7 @@ def test_get_grid_with_large_stablecoin():
 def test_long_get_stakeamount(
     stack_arr, cur_p, cur_amount, low_p, high_p, interval, expected
 ):
-    result = get_stakeamount(
+    result = get_position(
         stack_grid=stack_arr,
         cur_p=cur_p,
         cur_amount=cur_amount,
@@ -419,7 +419,7 @@ def test_long_get_stakeamount(
 def test_short_get_stakeamount(
     stack_arr, cur_p, cur_amount, low_p, high_p, interval, expected
 ):
-    result = get_stakeamount(
+    result = get_position(
         stack_grid=stack_arr,
         cur_p=cur_p,
         cur_amount=cur_amount,
@@ -437,7 +437,7 @@ def test_edge_cases():
     shortprice = [110, 105, 100, 95, 90]
     # cur_amount == sellamount
     assert (
-        get_stakeamount(
+        get_position(
             stack_grid=stack_arr,
             cur_p=95,
             cur_amount=80,
@@ -450,11 +450,11 @@ def test_edge_cases():
     )  # 无需变化
 
     # cur_amount == buyamount
-    assert get_stakeamount(stack_arr, 95, 90, 90, 110, 5, "long") == 0  # 无需变化
+    assert get_position(stack_arr, 95, 90, 90, 110, 5, "long") == 0  # 无需变化
 
     # cur_amount == sellamount && buyamount
     assert (
-        get_stakeamount(stack_arr, 95.00000001, 80, 90, 110, 5, "short") == 0
+        get_position(stack_arr, 95.00000001, 80, 90, 110, 5, "short") == 0
     )  # 无需变化
 
 

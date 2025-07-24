@@ -1,31 +1,18 @@
 import math
 from collections.abc import Sequence
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Literal, cast
 
 import numpy as np
 import pandas as pd
-from tradeutils import IndicatorName,load_df
-from mathematics.stata import (Cache_Profit, PriceVolume, calculate_avgprice,
-                               calculate_profit_with_short, slopeR)
+from tradeutils import load_df
 # 现在你可以导入共享文件夹中的模块了
 from tradeutils.volumeprofile import get_analyze_volumeprofiles
-from pandasutils import (DatetimeType, SequenceGenericType, SequenceType,
-                   TimedeltaType, TimeFormat, TimeFrameStr, dfutil, pathutil,
-                   timeutil)
+from pandasutils import (DatetimeType, 
+                   dfutil, timeutil)
+from mathematics import SequenceType
 
-
-
-
-# def adjust_datetime(time: datetime):
-#     # 判断时间是否是 00:00:00
-
-#     time = timeutil.to_utctz(time)
-#     if time.hour == 0 and time.minute == 0 and time.second == 0:
-#         # 如果是 00:00:00，加 1 分钟
-#         time += timedelta(minutes=1)
-#     return time
 
 
 def search_dfindex(
@@ -60,64 +47,6 @@ def search_dfindex(
         
         idx = np.clip(a=idx, a_min=0, a_max=len(df) - 1)
     return cast(int, idx)
-
-
-def resample(
-    dataframe: pd.DataFrame,
-    timeframe: timedelta = timedelta(minutes=10),
-    indexname="date",
-):
-
-    # 确保 timestamp 是 Datetime 类型，并且是索引
-    dfutil.setindex(dataframe, indexname)
-    index = pd.to_datetime(dataframe.index)
-    td = index[1] - index[0]
-    target_td = pd.to_timedelta(timeframe)
-    if td == target_td:
-        return dataframe
-    elif target_td < td:
-        raise ValueError(
-            f"Invalid parameters: timeframe parameter  '{timeframe}'  cannot be less than dataframe freq '{td}' ."
-        )
-
-    aggrul = {
-        "open": "first",  # 10分钟开盘价是5分钟数据中的第一个open
-        "high": "max",  # 10分钟最高价是5分钟数据中的最大high
-        "low": "min",  # 10分钟最低价是5分钟数据中的最小low
-        "close": "last",  # 10分钟收盘价是5分钟数据中的最后一个close
-        "volume": "sum",  # 10分钟成交量是5分钟数据中的总和
-    }
-
-    resampled_df = dataframe.resample(timeframe).agg(aggrul).dropna()
-
-    return resampled_df
-
-
-def _combined_df(
-    time: datetime,
-    informative: pd.DataFrame,
-    predict_df: pd.DataFrame,
-    indexname="date",
-):
-    dfutil.setindex(df=informative, key=indexname)
-    # 截取informative到指定时间点
-    inf_idx = search_dfindex(
-        time=time, df=informative, indexname=indexname, isclamp=False
-    )
-    # 调整时间范围，截取 informative 到指定时间长度
-    inf_idx = min(inf_idx, len(informative))
-    informative = informative.iloc[:inf_idx]
-    if informative.empty:
-        return informative
-
-    dfutil.setindex(df=predict_df, key=indexname)
-    combined_df = informative.combine_first(predict_df)
-    # combined_df.reset_index(inplace=True, drop=False)
-    return combined_df
-
-
-
-
 
 
 
@@ -238,7 +167,7 @@ def get_grid_index(
     return small
 
 
-def get_stakeamount(
+def get_position(
     stack_grid: Sequence | np.ndarray,
     cur_p: int | float,
     cur_amount: int | float,
@@ -280,66 +209,66 @@ def get_stakeamount(
         return 0
 
 
-def merge_predict_df(
-    pair: str,
-    time: datetime,
-    informative: pd.DataFrame,
-    predict_df: pd.DataFrame | None,
-    indexname="date",
-):
+# def merge_predict_df(
+#     pair: str,
+#     time: datetime,
+#     informative: pd.DataFrame,
+#     predict_df: pd.DataFrame | None,
+#     indexname="date",
+# ):
 
-    # 加载预测数据
-    if informative is None or informative.empty:
-        raise ValueError("Invalid parameters: informative cannot be None or empty.")
-    if predict_df is None or predict_df.empty:
-        return informative
+#     # 加载预测数据
+#     if informative is None or informative.empty:
+#         raise ValueError("Invalid parameters: informative cannot be None or empty.")
+#     if predict_df is None or predict_df.empty:
+#         return informative
 
-    else:
-        length = len(informative)
-        combined_df = _combined_df(
-            time=time,
-            informative=informative,
-            predict_df=predict_df,
-            indexname=indexname,
-        )
+#     else:
+#         length = len(informative)
+#         combined_df = _combined_df(
+#             time=time,
+#             informative=informative,
+#             predict_df=predict_df,
+#             indexname=indexname,
+#         )
 
-        # 计算移动长度
-        shift_length = len(combined_df) - length
-        if shift_length <= 0:
-            return combined_df
-        names = [n for n in combined_df.columns if n != indexname]
-        # 移动数据
-        df = dfutil.shift(
-            df=combined_df,
-            names=names,
-            periods=-shift_length,
-            must_include_names=True,
-        )
+#         # 计算移动长度
+#         shift_length = len(combined_df) - length
+#         if shift_length <= 0:
+#             return combined_df
+#         names = [n for n in combined_df.columns if n != indexname]
+#         # 移动数据
+#         df = dfutil.shift(
+#             df=combined_df,
+#             names=names,
+#             periods=-shift_length,
+#             must_include_names=True,
+#         )
 
-        # 删除移动后为null的尾部几行
-        df = df.iloc[:-shift_length]
-        return df
+#         # 删除移动后为null的尾部几行
+#         df = df.iloc[:-shift_length]
+#         return df
 
 
-def reset_predict_df(
-    df: pd.DataFrame,
-    loadf_dir_path: Path,
-    pair: str,
-    time: datetime,
-    timeindex: str,
-    timeframe: timedelta,
-):
-    pre_df, _ = load_df(
-        dir=loadf_dir_path, pair=pair, pre_time=time, time_frame=timeframe
-    )
-    slice_df = merge_predict_df(
-        pair=pair,
-        time=time,
-        informative=df,
-        predict_df=pre_df,
-        indexname=timeindex,
-    )
-    return slice_df
+# def reset_predict_df(
+#     df: pd.DataFrame,
+#     loadf_dir_path: Path,
+#     pair: str,
+#     time: datetime,
+#     timeindex: str,
+#     timeframe: timedelta,
+# ):
+#     pre_df, _ = load_df(
+#         dir=loadf_dir_path, pair=pair, pre_time=time, time_frame=timeframe
+#     )
+#     slice_df = merge_predict_df(
+#         pair=pair,
+#         time=time,
+#         informative=df,
+#         predict_df=pre_df,
+#         indexname=timeindex,
+#     )
+#     return slice_df
 
 
 
