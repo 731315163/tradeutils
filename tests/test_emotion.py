@@ -1,4 +1,7 @@
+from pathlib import Path
+from coverage import data
 import numpy as np
+import pandas
 import pytest
 from tradeutils.technical_analysis.Indicator import (
     calculate_adjusted_rsi_oscillators,
@@ -12,9 +15,10 @@ from tradeutils.technical_analysis.Indicator import (
 def sample_price_data():
     """生成标准化的测试价格数据"""
     np.random.seed(42)
-    close = np.random.rand(100)
-    high = close + np.random.rand(100) * 0.1
-    low = close - np.random.rand(100) * 0.1
+    dataframe= pandas.read_feather(Path.cwd()/"tests"/"BTC_USDT_USDT-5m-futures.feather")
+    close = dataframe['close'].to_numpy()
+    high = dataframe['high'].to_numpy()
+    low = dataframe['low'].to_numpy()
     return close, high, low
 
 # 测试 calculate_adjusted_rsi_oscillators

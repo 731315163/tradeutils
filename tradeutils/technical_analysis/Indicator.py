@@ -148,7 +148,6 @@ def calculate_trend_score(close: SequenceType):
 def calculate_adjusted_rsi_oscillators(close: SequenceType,periods=[5, 8, 11, 14, 17, 20]):
     """
     计算6个时间框架的调整后RSI振荡器，范围[-1,1]
-    对应论文中情绪指数的RSI成分（图2中rescaled RSI）{insert\_element\_0\_}
     """
     close = np.asarray(close, dtype=np.float64)
    
@@ -166,7 +165,6 @@ def calculate_adjusted_rsi_oscillators(close: SequenceType,periods=[5, 8, 11, 14
 def calculate_adjusted_candle_range_oscillators(close: SequenceType, high: SequenceType, low: SequenceType,periods = [3, 6, 9, 12, 15, 18]  ):
     """
     计算6个时间框架的调整后蜡烛范围振荡器，范围[-1,1]
-    对应论文中情绪指数的蜡烛范围成分（图2中rescaled CandleRange）{insert\_element\_1\_}
     """
     close = np.asarray(close, dtype=np.float64)
     high = np.asarray(high, dtype=np.float64)
@@ -225,7 +223,6 @@ def calculate_emotion_index(close: SequenceType, high: SequenceType, low: Sequen
     calculate_adjusted_rsi_oscillators(close)
     calculate_adjusted_candle_range_oscillators(close, high, low)
     caculate_stochastic_signals(close, high, low)
-    对应论文公式：EmotionIndex = (1/12) * Σ(oscillator_i){insert\_element\_2\_}
     """
     # 获取两类振荡器的结果
     rsi_oscillators = calculate_adjusted_rsi_oscillators(close)
@@ -250,7 +247,7 @@ def calculate_emotion_index(close: SequenceType, high: SequenceType, low: Sequen
 #         return pre_anchored_trend
 
 
-def calculate_anchored_trend(close: SequenceType, emotion_index: SequenceType, emotion_threshold: float = 0.1):
+def calculate_anchored_trend(close: SequenceType, emotion_index: SequenceType, emotion_threshold: float = 0.25):
     """
     计算锚定趋势分数。
     """
