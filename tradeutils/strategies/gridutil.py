@@ -3,7 +3,7 @@ from typing import Literal
 
 import numpy as np
 # 现在你可以导入共享文件夹中的模块了
-from tradeutils.volumeprofile import get_analyze_volumeprofiles
+from tradeutils.technical_analysis.volumeprofile import get_analyze_volumeprofiles
 from tradeutils.type import SequenceType
 
 

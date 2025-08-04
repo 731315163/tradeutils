@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from tradeutils.volumeprofile import (VolumeDistribution,
+from tradeutils.technical_analysis.volumeprofile import (VolumeDistribution,
                                              analyze_volumeprofile,
                                              get_analyze_volumeprofiles,
                                              get_volumedistributions)

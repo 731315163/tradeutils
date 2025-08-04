@@ -6,7 +6,6 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from pandasutils import dfutil
 from tradeutils.strategies.gridutil import (
     get_grid_index,
     get_pricesgrid,

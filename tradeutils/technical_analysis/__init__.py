@@ -1,5 +1,5 @@
-from .direction import get_SlopeR
-from .VWAP import VWAP
+from .direction import linear_regression
+from .volume_indicator import VWAP
 from .Indicator import (get_corrcoef,
 calculate_timing_indicator,calculate_trend_score,calculate_emotion_index,
 calculate_anchored_trend,caculate_stochastic_signals,
@@ -11,8 +11,8 @@ linear_regression_periods,average_arrays_strict_nan)
 
 
 __all__ = [
-    "VWAP",
-    "get_SlopeR",
+    "volume_indicator",
+    "linear_regression",
     "get_corrcoef",
     "calculate_timing_indicator",
     "calculate_trend_score",

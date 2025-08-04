@@ -34,30 +34,20 @@ class IndicatorName:
         self.avgprice = "avgprice"
         self.lsma = "lsma"
         self.atr = "atr"
-        self.atr_short = f"{self.atr}_short"
         self.obv= "obv"
-        
-        
-        
-        
-        self.grid = "grid"
-        self.interval = "interval"
-        self.upperband = "upperband"
-        self.middleband = "middleband"
-        self.lowerband = "lowerband"
         self.tr = "tr"
         
         
-        if timeframe:
-            self.atr_longtime = f"{self.atr}_{timeframe}"
-            self.direction_longtime = f"{self.direction}_{timeframe}"
+        # if timeframe:
+        #     self.atr_longtime = f"{self.atr}_{timeframe}"
+        #     self.direction_longtime = f"{self.direction}_{timeframe}"
 
-            self.upperband_longtime = f"{self.upperband}_{timeframe}"
-            self.middleband_longtime = f"{self.middleband}_{timeframe}"
-            self.lowerband_longtime = f"{self.lowerband}_{timeframe}"
-        else:
-            self.atr_longtime = self.atr
-            self.direction_longtime = self.direction
-            self.lowerband_longtime = self.lowerband
-            self.upperband_longtime = self.upperband
-            self.middleband_longtime = self.middleband
+        #     self.upperband_longtime = f"{self.upperband}_{timeframe}"
+        #     self.middleband_longtime = f"{self.middleband}_{timeframe}"
+        #     self.lowerband_longtime = f"{self.lowerband}_{timeframe}"
+        # else:
+        #     self.atr_longtime = self.atr
+        #     self.direction_longtime = self.direction
+        #     self.lowerband_longtime = self.lowerband
+        #     self.upperband_longtime = self.upperband
+        #     self.middleband_longtime = self.middleband

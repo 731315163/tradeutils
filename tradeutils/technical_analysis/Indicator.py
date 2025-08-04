@@ -24,11 +24,14 @@ def roc_periods(close: SequenceType, periods=[24, 32, 48, 64, 96, 128, 192, 256,
     signals = []
     close = np.asarray(close, dtype=np.float64)
     for period in periods:
-        roc = ta.ROCR(close, timeperiod=period)
+        roc = ta.ROCP(close, timeperiod=period)
         signals.append(roc)
     return signals
 
-def sma_periods(close: SequenceType, periods=[24, 32, 48, 64, 96, 128, 192, 256, 384, 512]):
+def sma_periods(close: SequenceType,signal_range=(1,-1,0) ,periods=[24, 32, 48, 64, 96, 128, 192, 256, 384, 512]):
+    '''
+    singnal_range: 默认为(1,-1,0) ,正向，负向，0
+    '''
     signals = []
     close = np.asarray(close, dtype=np.float64)
     for period in periods:
@@ -41,8 +44,8 @@ def sma_periods(close: SequenceType, periods=[24, 32, 48, 64, 96, 128, 192, 256,
         period_signals = np.where(
             has_nan,
             np.nan,  # 存在NaN时保留NaN
-            np.where(close > sma, 1.0,
-                     np.where(close < sma, -1.0, 0.0))
+            np.where(close > sma, signal_range[0],
+                     np.where(close < sma, signal_range[1], signal_range[2]))
         )
         signals.append(period_signals)
     return signals
@@ -73,7 +76,7 @@ def sma_crossover_periods(close: SequenceType, pairs=[
         signals.append(period_signals)
     return signals
 
-def linear_regression_periods(close: SequenceType, periods=[3*21, 4*21, 5*21, 6*21, 7*21, 8*21, 9*21, 12*21, 15*21, 18*21]):
+def linear_regression_periods(close: SequenceType, periods=[3, 5, 7, 9, 12, 15, 18,21,25,29]):
     signals = []
     close = np.asarray(close, dtype=np.float64)
     for period in periods:
@@ -88,14 +91,9 @@ def linear_regression_periods(close: SequenceType, periods=[3*21, 4*21, 5*21, 6*
         返回:
             标准化后的斜率列表，每个值都在[-1, 1]之间
         """
-        
-        
         # 计算原始斜率
-        slopes = ta.LINEARREG_SLOPE(close, period)
-        
-        # 标准化每个斜率值
-        normalized = np.tanh(slopes)
-        signals.append( normalized)
+        slopes = ta.LINEARREG_ANGLE(close, period)
+        signals.append( slopes)
     return signals
 
 def average_arrays_strict_nan(arrays:list[SequenceType]):
@@ -142,9 +140,9 @@ def calculate_trend_score(close: SequenceType):
     # 4. Linear Regression Slope Signals
     lr_signals = linear_regression_periods(close)
 
-    signals = average_arrays_strict_nan(roc_signals+sma_signals+crossover_signals+lr_signals)
+    signals = average_arrays_strict_nan(sma_signals+crossover_signals+lr_signals)
     return signals
-    return np.clip(signals, -1.0, 1.0)
+   
 def calculate_adjusted_rsi_oscillators(close: SequenceType,periods=[5, 8, 11, 14, 17, 20]):
     """
     计算6个时间框架的调整后RSI振荡器，范围[-1,1]
@@ -247,21 +245,19 @@ def calculate_emotion_index(close: SequenceType, high: SequenceType, low: Sequen
 #         return pre_anchored_trend
 
 
-def calculate_anchored_trend(close: SequenceType, emotion_index: SequenceType, emotion_threshold: float = 0.25):
+def calculate_anchored_trend(trends: SequenceType, emotion_index: SequenceType, emotion_threshold: float = 0.25):
     """
     计算锚定趋势分数。
     """
-    close = np.asarray(close, dtype=np.float64)
-    emotion_index = np.array(emotion_index)
+    trends = np.asarray(trends, dtype=np.float64)
+    emotion_index = np.asarray(emotion_index,dtype=np.float64)
   
     
-    if close.shape != emotion_index.shape:
+    if trends.shape != emotion_index.shape:
         raise ValueError("close和emotion_index必须具有相同的形状")
     
-    trends = calculate_trend_score(close)
     ary = np.where(np.abs(emotion_index) <= abs(emotion_threshold), trends, np.nan)
     filled_nan_ary = forward_fill(ary)
-    
     return filled_nan_ary
     
 

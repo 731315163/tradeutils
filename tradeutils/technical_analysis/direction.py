@@ -4,7 +4,7 @@ from mathematics import SequenceType
 from mathematics.stata import (linregress,
                                slopeR,min_max)
 
-def get_SlopeR( datapoint: SequenceType, err: SequenceType|None=None, windows: int = 7):
+def linear_regression( datapoint: SequenceType, err: SequenceType|None=None, windows: int = 7):
     slope = np.zeros(len(datapoint))
     x = np.arange(1, windows + 1)
     
