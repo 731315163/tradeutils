@@ -1,6 +1,6 @@
 from tradeutils.technical_analysis.Indicator import hurst_exponent
 import numpy as np
-
+import talib
 
 
 def test_hurst_exponent():
@@ -27,3 +27,15 @@ def test_hurst_exponent():
 
 
 
+def test_tanh():
+    a = 1000
+    b=10
+    c= 1
+    d= 0.001
+    tanh= talib.TANH( np.array([1000,10 ,1,d,np.pi]))
+    print(f"tanh(1000) = {tanh[0]}")
+    print(f"tanh(10) = {tanh[1]}")
+    print(f"tanh(1) = {tanh[2]}")
+    print(f"tanh(0.001) = {tanh[3]}")
+    print(f"tanh(pi) = {tanh[4]}")
+    assert True

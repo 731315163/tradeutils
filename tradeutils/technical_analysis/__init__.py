@@ -8,7 +8,7 @@ calculate_adjusted_rsi_oscillators,caculate_williams_signals,roc_periods,
 hurst_exponent,sma_crossover_periods,sma_periods,
 linear_regression_periods,average_arrays_strict_nan)
 
-from volatility_indicators import PTR,PTRP
+from .volatility_indicators import PTR,PTRP
 
 __all__ = [
     "PTR",

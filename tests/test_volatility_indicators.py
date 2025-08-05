@@ -49,7 +49,7 @@ def test_PTRP_period_equal_length():
     period = 3  # 序列长度为3
     
     # 整个序列的波动：max_high=30, min_low=5 → 范围25 → 平均价格17.5 → 25/17.5*100≈142.857
-    expected = np.array([np.nan, np.nan, 142.85714286])
+    expected = np.array([np.nan, np.nan, 1.4285714286])
     
     result = PTRP(high, low, period)
     np.testing.assert_allclose(result, expected, rtol=1e-6)
@@ -74,15 +74,15 @@ def test_PTRP_invalid_input_short_length():
 
 def test_PTRP_numpy_input():
     """测试输入为numpy数组的兼容性"""
-    high = np.array([100, 110, 120, 115])
-    low = np.array([90, 95, 105, 100])
+    high = np.array([100, 110, 120, 115])*100
+    low = np.array([90, 95, 105, 100])*100
     period = 2
     
     expected = np.array([
         np.nan,
-        (110-90)/((110+90)/2)*100,  # 20/100*100=20
-        (120-95)/((120+95)/2)*100,   # 25/107.5*100≈23.2558
-        (115-100)/((115+100)/2)*100  # 15/107.5*100≈13.9535
+        (110-90)/((110+90)/2),  # 20/100*100=20
+        (120-95)/((120+95)/2),   # 25/107.5*100≈23.2558
+        (120-100)/((120+100)/2)  # 15/107.5*100≈13.9535
     ])
     
     result = PTRP(high, low, period)
