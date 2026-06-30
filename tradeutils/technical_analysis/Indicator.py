@@ -1,5 +1,6 @@
 
 
+import warnings
 import numpy as np
 import talib as ta
 from mathematics.impute import forward_fill
@@ -272,60 +273,136 @@ def calculate_timing_indicator(anchored_trend: SequenceType| float, emotion_inde
         return ary[0]
     return ary
 
-def hurst_exponent(price_array:SequenceType, max_lag=20):
+def hurst_exponent(
+    price_array: SequenceType,
+    max_lag: int = 20,
+    window_size: int = 1,
+    log_returns: bool = False,
+    robust_regression: bool = False,
+    min_valid_lags: int = 3
+) -> float:
     """
-    使用numpy数组计算赫斯特指标
+    优化版滑动窗口赫斯特指数计算函数，支持对数收益率和稳健回归
+    
     参数:
-        price_array: 一维numpy数组，包含价格序列
-        max_lag: 最大滞后阶数
+        price_array: 价格序列（支持列表、numpy数组等序列类型）
+        max_lag: 最大滞后阶数，默认20
+        window_size: 滑动窗口大小（计算收益率的周期），默认1
+        log_returns: 是否使用对数收益率（而非简单价格差），默认False
+        robust_regression: 是否使用稳健回归（抵抗异常值），默认False
+        min_valid_lags: 最小有效滞后阶数数量，低于此值将抛出警告，默认3
+    
     返回:
-        hurst: 赫斯特指数
+        hurst: 赫斯特指数（范围通常在0~1之间）
     """
-
+    # --------------------------
+    # 1. 输入处理与验证（增强鲁棒性）
+    # --------------------------
+    # 转换为numpy数组并去重（避免常数序列导致的问题）
+    price_array = np.asarray(price_array, dtype=np.float64)
     
-    # 计算收益率序列 (一阶差分)
-    returns = np.diff(price_array)
+    # 基础长度检查
+    if len(price_array) < 2 * window_size:
+        raise ValueError(f"价格序列过短（需至少{2*window_size}个非重复值）")
+    
+    # 窗口大小验证
+    if not isinstance(window_size, int) or window_size < 1:
+        raise ValueError("窗口大小必须是正整数")
+    if window_size >= len(price_array) // 2:
+        raise ValueError(f"窗口过大（建议不超过序列长度的1/2）")
+    
+    # 滞后阶数范围调整
+    max_lag = min(max_lag, len(price_array) // 2)  # 滞后阶数不超过序列一半
+    if max_lag < 2:
+        raise ValueError(f"最大滞后阶数过小（至少需要2）")
+    lags = np.arange(2, max_lag + 1, dtype=int)  # 滞后阶数序列
+    
+    # --------------------------
+    # 2. 收益率计算（支持对数收益率）
+    # --------------------------
+    if log_returns:
+        # 对数收益率 = ln(price[t]/price[t-window])，更符合金融数据特性
+        with np.errstate(invalid='raise'):
+            returns = np.log(price_array[window_size:] / price_array[:-window_size])
+    else:
+        # 简单收益率 = price[t] - price[t-window]
+        returns = price_array[window_size:] - price_array[:-window_size]
+    
+    # 移除收益率中的NaN和inf（异常值处理）
+    returns = returns[~np.isnan(returns) & ~np.isinf(returns)]
     n = len(returns)
+    if n < max_lag:
+        warnings.warn(f"有效收益率序列过短（{n}），可能影响结果可靠性")
     
-    # 生成滞后阶数序列
-    lags = np.arange(2, max_lag + 1)
-    rs_values = np.zeros(len(lags))
+    # --------------------------
+    # 3. 向量化计算R/S值（性能优化）
+    # --------------------------
+    rs_values = []
+    valid_lags = []
     
-    for i, lag in enumerate(lags):
-        # 计算可完整划分的子序列数量
-        num_sub = n // lag
-        total_length = num_sub * lag
+    for lag in lags:
+        num_sub = n // lag  # 子序列数量
+        if num_sub < 2:  # 至少需要2个子序列才能保证统计意义
+            continue
         
-        # 重塑为二维数组 (子序列数量 x 滞后阶数)
+        # 重塑为二维数组（子序列数量 x 滞后阶数）
+        total_length = num_sub * lag
         sub_series = returns[:total_length].reshape(num_sub, lag)
         
-        # 计算每个子序列的均值偏差
-        mean_sub = np.mean(sub_series, axis=1, keepdims=True)
+        # 计算均值偏差（向量化操作）
+        mean_sub = sub_series.mean(axis=1, keepdims=True)
         deviations = sub_series - mean_sub
         
-        # 计算累积偏差
-        cumulative = np.cumsum(deviations, axis=1)
+        # 累积偏差与极差
+        cumulative = deviations.cumsum(axis=1)
+        range_vals = cumulative.max(axis=1) - cumulative.min(axis=1)
         
-        # 计算每个子序列的极差 (max - min)
-        range_vals = np.max(cumulative, axis=1) - np.min(cumulative, axis=1)
+        # 标准差（使用样本标准差，ddof=1）
+        std_vals = sub_series.std(axis=1, ddof=1)
         
-        # 计算每个子序列的标准差
-        std_vals = np.std(sub_series, axis=1)
+        # 过滤标准差为0的子序列（避免除零）
+        valid_mask = std_vals > 1e-10  # 允许微小波动（数值稳定性）
+        if not np.any(valid_mask):
+            continue
         
-        # 计算R/S值 (避免除零错误)
-        with np.errstate(invalid='ignore'):
-            rs = range_vals / std_vals
-        rs = rs[~np.isnan(rs)]  # 过滤无效值
-        
-        # 保存平均R/S值
-        rs_values[i] = np.mean(rs)
+        # 计算R/S值并取平均
+        rs = (range_vals[valid_mask] / std_vals[valid_mask]).mean()
+        rs_values.append(rs)
+        valid_lags.append(lag)
     
-    # 对数转换并进行线性回归
-    log_lags = np.log10(lags)
+    # --------------------------
+    # 4. 回归计算赫斯特指数（稳健性优化）
+    # --------------------------
+    # 检查有效滞后阶数数量
+    if len(valid_lags) < min_valid_lags:
+        warnings.warn(f"有效滞后阶数不足（{len(valid_lags)}），结果可能不可靠")
+    
+    # 对数转换
+    log_lags = np.log10(valid_lags)
     log_rs = np.log10(rs_values)
     
-    # 计算回归斜率 (赫斯特指数)
-    hurst = np.polyfit(log_lags, log_rs, 1)[0]
+    # 稳健回归（可选）：使用Huber损失函数抵抗异常值
+    if robust_regression:
+        from scipy.optimize import minimize
+        
+        def huber_loss(params, x, y, delta=1.345):
+            """Huber损失函数：结合了L1和L2损失的稳健性"""
+            y_pred = params[0] * x + params[1]
+            residuals = y - y_pred
+            loss = np.where(
+                np.abs(residuals) <= delta,
+                0.5 * residuals**2,
+                delta * (np.abs(residuals) - 0.5 * delta)
+            )
+            return np.sum(loss)
+        
+        # 初始参数估计（普通线性回归）
+        init_params = np.polyfit(log_lags, log_rs, 1)
+        result = minimize(huber_loss, init_params, args=(log_lags, log_rs))
+        hurst = result.x[0]
+    else:
+        # 普通线性回归
+        hurst = np.polyfit(log_lags, log_rs, 1)[0]
     
     return hurst
 

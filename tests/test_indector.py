@@ -39,3 +39,91 @@ def test_tanh():
     print(f"tanh(0.001) = {tanh[3]}")
     print(f"tanh(pi) = {tanh[4]}")
     assert True
+
+
+# tests/test_indicator.py
+import pytest
+import numpy as np
+from tradeutils.technical_analysis.Indicator import linear_regression_periods
+
+def test_normal_input():
+    """测试正常输入数据的处理"""
+    close = [100, 101, 102, 103, 104, 105, 106, 107, 108, 109]
+    periods = [3, 5]
+    
+    result = linear_regression_periods(close, periods)
+    
+    # 验证输出结构
+    assert len(result) == len(periods)
+    for i, period in enumerate(periods):
+        assert len(result[i]) == len(close)
+        # 验证数值范围在[-1, 1]之间
+        assert np.all(result[i] >= -1.0) and np.all(result[i] <= 1.0)
+
+def test_empty_input():
+    """测试空输入的处理"""
+    with pytest.raises(ValueError):
+        linear_regression_periods([], [3, 5])
+
+def test_short_sequence():
+    """测试序列长度小于周期的场景"""
+    close = [100, 101, 102]
+    periods = [5, 10]
+    
+    result = linear_regression_periods(close, periods)
+    
+    # 验证输出结构
+    assert len(result) == len(periods)
+    for i, period in enumerate(periods):
+        assert len(result[i]) == len(close)
+        # 验证前(period-1)个值为NaN
+        assert np.isnan(result[i][:period-1]).all()
+        # 验证最后一个值有效
+        assert not np.isnan(result[i][-1])
+
+def test_invalid_period():
+    """测试无效周期参数的处理"""
+    close = [100, 101, 102, 103, 104]
+    
+    # 测试包含0的周期
+    with pytest.raises(ValueError):
+        linear_regression_periods(close, [0, 3])
+
+    # 测试包含负数的周期
+    with pytest.raises(ValueError):
+        linear_regression_periods(close, [-5, 3])
+@pytest.mark.parametrize("r", [
+    100,
+    1,
+    10000
+])
+def test_single_period(r):
+    """测试单个周期的处理"""
+    close = np.random.rand(100) * r  # 随机生成100个价格
+    
+    result = linear_regression_periods(close, [10])
+    
+    # 验证输出结构
+    assert len(result) == 1
+    assert len(result[0]) == len(close)
+    # 验证非NaN值的数量
+    valid_values = np.sum(~np.isnan(result[0]))
+    assert valid_values == len(close) - 9  # 前9个值应为NaN
+
+@pytest.mark.parametrize("periods", [
+    [3, 5, 7],
+    [10],
+    [20, 30]
+])
+def test_multiple_period_configs(periods):
+    """测试不同的周期配置"""
+    close = np.random.rand(200) * 100
+    
+    result = linear_regression_periods(close, periods)
+    
+    assert len(result) == len(periods)
+    for i, period in enumerate(periods):
+        assert len(result[i]) == len(close)
+        assert np.all(result[i] >= -1.0) and np.all(result[i] <= 1.0)
+        valid_count = np.sum(~np.isnan(result[i]))
+        assert valid_count == len(close) - (period - 1)
