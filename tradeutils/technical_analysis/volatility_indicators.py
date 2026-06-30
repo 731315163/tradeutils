@@ -1,7 +1,12 @@
 import numpy as np
 import talib 
-from mathematics.impute import forward_fill
 from tradeutils.type import SequenceType
+
+"""
+波动指标
+ATR、TRANGE、STDDEV
+***/
+"""
 
 
 

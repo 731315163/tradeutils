@@ -3,7 +3,7 @@ import numpy as np
 
 from tradeutils.technical_analysis import (  # 请替换为实际的模块名
     roc_periods,
-    sma_periods,
+    close_crossover_sma_periods,
     sma_crossover_periods,
     linear_regression_periods,
     calculate_trend_score, average_arrays_strict_nan
@@ -53,7 +53,7 @@ def test_roc_periods_short_data():
 def test_sma_periods_basic():
     """测试sma_periods的基本功能"""
     close = generate_test_data(1000)
-    result = sma_periods(close)
+    result = close_crossover_sma_periods(close)
     
     
     assert len(result) == 10
@@ -63,7 +63,7 @@ def test_sma_periods_equal_case():
     """测试收盘价等于SMA的情况"""
     # 创建收盘价等于SMA的数据（水平直线）
     close = np.ones(1000) * 100
-    result = sma_periods(close)
+    result = close_crossover_sma_periods(close)
     
     # 所有信号都应该是0
     for signal in result:
@@ -176,7 +176,7 @@ def test_different_data_lengths(data_length):
     
     # 测试各个函数
     roc_result = roc_periods(close)
-    sma_result = sma_periods(close)
+    sma_result = close_crossover_sma_periods(close)
     crossover_result = sma_crossover_periods(close)
     lr_result = linear_regression_periods(close)
     score_result = calculate_trend_score(close)
@@ -197,7 +197,7 @@ def test_different_input_types(input_type):
     
     # 测试各个函数
     roc_result = roc_periods(close)
-    sma_result = sma_periods(close)
+    sma_result = close_crossover_sma_periods(close)
     crossover_result = sma_crossover_periods(close)
     lr_result = linear_regression_periods(close)
     score_result = calculate_trend_score(close)
@@ -226,7 +226,7 @@ def test_sma_periods():
         np.full(500, 10.0),  # 前500个数据保持10
         np.linspace(10, 20, 500)  # 后500个数据涨到20
     ])
-    sma_above = sma_periods(close_above)
+    sma_above = close_crossover_sma_periods(close_above)
     assert all(signal == 1.0 for signal in sma_above)
     
     # 2. 价格低于SMA (最近价格下跌)
@@ -234,12 +234,12 @@ def test_sma_periods():
         np.full(500, 20.0),  # 前500个数据保持20
         np.linspace(20, 10, 500)  # 后500个数据跌到10
     ])
-    sma_below = sma_periods(close_below)
+    sma_below = close_crossover_sma_periods(close_below)
     assert all(signal == -1.0 for signal in sma_below)
     
     # 3. 价格等于SMA (平稳)
     close_equal = np.full(1000, 15.0)
-    sma_equal = sma_periods(close_equal)
+    sma_equal = close_crossover_sma_periods(close_equal)
     assert all(signal == 0.0 for signal in sma_equal)
 
 # 测试sma_crossover_periods函数
@@ -406,7 +406,7 @@ def test_calculate_trend_score():
 def test_input_type_compatibility(input_data):
     # 验证不同输入类型都能被处理而不报错
     roc_periods(input_data)
-    sma_periods(input_data)
+    close_crossover_sma_periods(input_data)
     sma_crossover_periods(input_data)
     linear_regression_periods(input_data)
     calculate_trend_score(input_data)
@@ -426,7 +426,7 @@ def test_minimum_data_length():
     
     # 验证所有函数都能处理这个长度的数据
     assert len(roc_periods(close_min)) == 10
-    assert len(sma_periods(close_min)) == 10
+    assert len(close_crossover_sma_periods(close_min)) == 10
     assert len(sma_crossover_periods(close_min)) == 10
     assert len(linear_regression_periods(close_min)) == 10
     assert isinstance(calculate_trend_score(close_min), float)

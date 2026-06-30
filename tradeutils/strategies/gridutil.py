@@ -8,38 +8,7 @@ from tradeutils.type import SequenceType
 
 
 
-# def search_dfindex(
-#     time: DatetimeType, df: pd.DataFrame, indexname="date", isclamp: bool = False
-# ):
-#     """
-#     在 DataFrame 中搜索特定时间的索引位置。
 
-#     本函数旨在查找给定时间在 DataFrame 中的插入位置，可以选择性地对结果索引进行边界检查以防止越界。
-#     查找插入位置
-#     new <= old
-#     参数:
-#     - time: datetime 类型，指定要搜索的时间。
-#     - df: pd.DataFrame 类型，包含时间相关索引或列的数据表。
-#     - indexname: 字符串类型，指定 DataFrame 中的时间相关索引或列名，默认为 "date"。
-#     - isclamp: 布尔类型，指示是否对结果索引进行边界检查，默认为 False。
-
-#     返回:
-#     - int 类型，时间在 DataFrame 中的插入位置索引。
-#     """
-#     time = timeutil.to_utctz(time=time)
-
-#     if indexname == df.index.name:
-#         column = df.index
-#     elif indexname in df.columns:
-#         column = df[indexname]
-#     else:
-#         raise ValueError("Invalid indexname: indexname must be in df.columns or index.")
-#     column = timeutil.to_utctz(column)
-#     idx = cast(int, column.searchsorted(value=time, side="left"))
-#     if isclamp:
-        
-#         idx = np.clip(a=idx, a_min=0, a_max=len(df) - 1)
-#     return cast(int, idx)
 
 
 
@@ -202,66 +171,7 @@ def get_position(
         return 0
 
 
-# def merge_predict_df(
-#     pair: str,
-#     time: datetime,
-#     informative: pd.DataFrame,
-#     predict_df: pd.DataFrame | None,
-#     indexname="date",
-# ):
 
-#     # 加载预测数据
-#     if informative is None or informative.empty:
-#         raise ValueError("Invalid parameters: informative cannot be None or empty.")
-#     if predict_df is None or predict_df.empty:
-#         return informative
-
-#     else:
-#         length = len(informative)
-#         combined_df = _combined_df(
-#             time=time,
-#             informative=informative,
-#             predict_df=predict_df,
-#             indexname=indexname,
-#         )
-
-#         # 计算移动长度
-#         shift_length = len(combined_df) - length
-#         if shift_length <= 0:
-#             return combined_df
-#         names = [n for n in combined_df.columns if n != indexname]
-#         # 移动数据
-#         df = dfutil.shift(
-#             df=combined_df,
-#             names=names,
-#             periods=-shift_length,
-#             must_include_names=True,
-#         )
-
-#         # 删除移动后为null的尾部几行
-#         df = df.iloc[:-shift_length]
-#         return df
-
-
-# def reset_predict_df(
-#     df: pd.DataFrame,
-#     loadf_dir_path: Path,
-#     pair: str,
-#     time: datetime,
-#     timeindex: str,
-#     timeframe: timedelta,
-# ):
-#     pre_df, _ = load_df(
-#         dir=loadf_dir_path, pair=pair, pre_time=time, time_frame=timeframe
-#     )
-#     slice_df = merge_predict_df(
-#         pair=pair,
-#         time=time,
-#         informative=df,
-#         predict_df=pre_df,
-#         indexname=timeindex,
-#     )
-#     return slice_df
 
 
 

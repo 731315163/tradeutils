@@ -1,5 +1,5 @@
 from pathlib import Path
-from coverage import data
+
 import numpy as np
 import pandas
 import pytest

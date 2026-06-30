@@ -21,7 +21,7 @@ def get_corrcoef( datapoint: SequenceType, windows: int = 7):
 
 
 
-def roc_periods(close: SequenceType, periods=[24, 32, 48, 64, 96, 128, 192, 256, 384, 512]):
+def roc_periods(close: SequenceType, periods=[20, 32, 48, 64, 96, 128, 192, 256, 384, 512]):
     signals = []
     close = np.asarray(close, dtype=np.float64)
     for period in periods:
@@ -29,7 +29,7 @@ def roc_periods(close: SequenceType, periods=[24, 32, 48, 64, 96, 128, 192, 256,
         signals.append(roc)
     return signals
 
-def sma_periods(close: SequenceType,signal_range=(1,-1,0) ,periods=[24, 32, 48, 64, 96, 128, 192, 256, 384, 512]):
+def close_crossover_sma_periods(close: SequenceType,signal_range=(1,-1,0) ,periods=[20, 32, 48, 64, 96, 128, 192, 256, 384, 512]):
     '''
     singnal_range: 默认为(1,-1,0) ,正向，负向，0
     '''
@@ -133,7 +133,7 @@ def calculate_trend_score(close: SequenceType):
     
     
     # 2. Simple Moving Average Signals
-    sma_signals = sma_periods(close)
+    sma_signals = close_crossover_sma_periods(close)
     
     # 3. SMA Crossover Signals
     crossover_signals = sma_crossover_periods(close)
@@ -201,7 +201,7 @@ def caculate_stochastic_signals(close: SequenceType, high: SequenceType, low: Se
         signals.append(signal)
     return signals
 
-def caculate_williams_signals(close: SequenceType, high: SequenceType, low: SequenceType, periods=[14, 21]):
+def caculate_williams_signals(close: SequenceType, high: SequenceType, low: SequenceType, periods=[6,10,14, 21]):
     signals = []
     close = np.asarray(close, dtype=np.float64)
     high = np.asarray(high, dtype=np.float64)
@@ -406,3 +406,78 @@ def hurst_exponent(
     
     return hurst
 
+def SuperTrend(high, low, close, atr_period=10, multiplier=3):
+    """
+    使用TA-Lib计算ATR，结合向量操作实现超级趋势
+    
+    参数:
+        high: 最高价数组
+        low: 最低价数组
+        close: 收盘价数组
+        atr_period: ATR计算周期，默认10
+        multiplier: 超级趋势乘数，默认3
+        
+    返回:
+        upper_final: 最终上轨数组
+        lower_final: 最终下轨数组
+        supertrend: 超级趋势数组（1表示上升趋势，-1表示下降趋势）
+    """
+    # 确保输入为float64类型（TA-Lib要求）
+    high = np.asarray(high, dtype=np.float64)
+    low = np.asarray(low, dtype=np.float64)
+    close = np.asarray(close, dtype=np.float64)
+    
+    # 使用TA-Lib计算ATR，高效且稳定
+    atr = ta.ATR(high, low, close, timeperiod=atr_period)
+    
+    n = len(high)
+    if n == 0:
+        return np.array([]), np.array([]), np.array([])
+    
+    # 计算基本上下轨
+    upper_basic = (high + low) / 2 + multiplier * atr
+    lower_basic = (high + low) / 2 - multiplier * atr
+    
+    # 初始化结果数组
+    upper_final = np.zeros_like(high)
+    lower_final = np.zeros_like(low)
+    supertrend = np.ones_like(close)  # 1表示上升趋势，-1表示下降趋势
+    
+    # 第一个元素的初始值
+    upper_final[0] = upper_basic[0]
+    lower_final[0] = lower_basic[0]
+    
+    # 处理ATR初始NaN值（TA-Lib前period-1个值为NaN）
+    first_valid_idx = np.where(~np.isnan(atr))[0][0] if np.any(~np.isnan(atr)) else 0
+    if first_valid_idx > 0:
+        upper_final[:first_valid_idx] = np.nan
+        lower_final[:first_valid_idx] = np.nan
+        supertrend[:first_valid_idx] = np.nan
+    
+    # 向量计算核心逻辑
+    for i in range(max(1, first_valid_idx), n):
+        # 计算最终上轨
+        if close[i-1] <= upper_final[i-1]:
+            upper_final[i] = min(upper_basic[i], upper_final[i-1])
+        else:
+            upper_final[i] = upper_basic[i]
+            
+        # 计算最终下轨
+        if close[i-1] >= lower_final[i-1]:
+            lower_final[i] = max(lower_basic[i], lower_final[i-1])
+        else:
+            lower_final[i] = lower_basic[i]
+            
+        # 确定趋势
+        if close[i] <= upper_final[i]:
+            supertrend[i] = 1
+        else:
+            supertrend[i] = -1
+            
+        # 趋势变化时调整轨道
+        if supertrend[i] == 1 and supertrend[i-1] == -1:
+            lower_final[i] = lower_basic[i]
+        elif supertrend[i] == -1 and supertrend[i-1] == 1:
+            upper_final[i] = upper_basic[i]
+    
+    return upper_final, lower_final, supertrend

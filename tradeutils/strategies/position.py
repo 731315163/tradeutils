@@ -4,7 +4,7 @@ from tradeutils.type import SequenceType
 import numpy as np
 
 
-class Position:
+class GridPosition:
     def __init__(self,  index: int, position_sizing: float,positions: SequenceType):
         """
         side: long or short
@@ -55,5 +55,13 @@ class Position:
         #调正仓位，+ 买入，- 卖出
         return amount
 
+
+
+def get_position_by_stoploss(total_balance:float,max_stoploss:float,  cur_stoploss:float, ):
+    """
+    根据价格获取仓位
+    """
+    position= total_balance * max_stoploss/cur_stoploss
+    return position
 
  
